@@ -32,23 +32,32 @@ exports.handler = async (event) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Генерация ключевых слов
+    const keywords = ["joy", "holiday", "gift", "smile", "cheer"];
+
     const participant = {
       name,
       password: hashedPassword,
+      score: 0, // Начальные очки
+      keywords, // Ключевые слова для проверки поздравлений
       createdAt: new Date(),
     };
 
     const result = await participants.insertOne(participant);
 
     // Создаём JWT токен
-    const token = jwt.sign({ id: result.insertedId, name }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(
+      { id: result.insertedId, name },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
     return {
       statusCode: 201,
       body: JSON.stringify({
         message: "Participant registered successfully!",
         token,
-        user: { name },
+        user: { name, score: 0, keywords },
       }),
     };
   } catch (error) {
