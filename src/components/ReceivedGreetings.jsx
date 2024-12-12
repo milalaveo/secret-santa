@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { UserContext } from "../context/UserContext.js";
 
-function ReceivedGreetings({ user }) {
+function ReceivedGreetings() {
+  const { user } = useContext(UserContext);
   const [greetings, setGreetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -10,15 +12,12 @@ function ReceivedGreetings({ user }) {
       try {
         const token = localStorage.getItem("token");
 
-        const response = await fetch(
-          `/.netlify/functions/getMessages?recipient=${user.name}`,
-          {
+        const response = await fetch(`/.netlify/functions/getMessages`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-        }
-        );
+        });
         const data = await response.json();
 
         if (!response.ok) {
@@ -45,8 +44,12 @@ function ReceivedGreetings({ user }) {
         <ul>
           {greetings.map((greeting, index) => (
             <li key={index}>
-              <p><strong>From:</strong> {greeting.sender}</p>
-              <p><strong>Message:</strong> {greeting.greeting}</p>
+              <p>
+                <strong>From:</strong> {greeting.sender}
+              </p>
+              <p>
+                <strong>Message:</strong> {greeting.greeting}
+              </p>
             </li>
           ))}
         </ul>

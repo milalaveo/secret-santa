@@ -1,57 +1,67 @@
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./components/Login";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AddParticipant from "./components/AddParticipant";
 import Dashboard from "./components/Dashboard";
 import ReceivedGreetings from "./components/ReceivedGreetings";
+import { UserContext } from "./context/UserContext.js";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Login from "./components/Login.jsx";
+import Logout from "./components/Logout.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [userLoaded, setUserLoaded] = useState(false);
 
-  const handleLoginSuccess = (userData) => {
-    setUser(userData);
-  };
+  React.useEffect(() => {
+    const handler = async () => {
+      const token = localStorage.getItem("token");
 
-  const handleLogout = () => {
-    setUser(null);
-  };
+      if (!token) {
+        setUserLoaded(true);
+        return;
+      }
+
+      const response = await fetch("/.netlify/functions/getUser", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        setUserLoaded(true);
+        return;
+      }
+
+      try {
+        const data = await response.json();
+
+        setUser(data.user);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setUserLoaded(true);
+      }
+    };
+
+    handler();
+  }, [setUserLoaded, setUser]);
 
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            user ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Login onLoginSuccess={handleLoginSuccess} />
-            )
-          }
-        />
-        <Route path="/register" element={<AddParticipant />} />
-        <Route
-          path="/dashboard"
-          element={
-            user ? (
-              <Dashboard user={user} onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
-        />
-        <Route
-          path="/received-greetings"
-          element={
-            user ? (
-              <ReceivedGreetings user={user} />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
-        />
-      </Routes>
-    </Router>
+    <UserContext.Provider value={{ user, userLoaded, setUser }}>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/received-greetings" element={<ReceivedGreetings />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Route>
+          <Route path="/register" Component={AddParticipant} />
+          <Route path="/login" Component={Login} />
+          <Route path="/logout" Component={Logout} />
+          {/*<Route path="/" element={<Navigate to="/login" replace />} />*/}
+        </Routes>
+      </BrowserRouter>
+    </UserContext.Provider>
   );
 }
 

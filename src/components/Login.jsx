@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext.js";
 
-function Login({ onLoginSuccess }) {
+function Login() {
+  const { setUser } = useContext(UserContext);
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [responseMessage, setResponseMessage] = useState("");
 
   const onSwitchToRegister = () => {
-    navigate('/register');
+    navigate("/register");
   };
 
   const handleLogin = async () => {
@@ -38,8 +40,8 @@ function Login({ onLoginSuccess }) {
       setResponseMessage("Login successful!");
       setName("");
       setPassword("");
-      onLoginSuccess(data.user); // Передача информации о пользователе
-      navigate('/dashboard');
+      setUser(data.user); // Передача информации о пользователе
+      navigate("/dashboard");
     } catch (error) {
       setResponseMessage(error.message);
     }

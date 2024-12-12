@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../context/UserContext.js";
 
-function Dashboard({ user, onLogout }) {
+function Dashboard() {
+  const { user } = useContext(UserContext);
   const [greeting, setGreeting] = useState("");
   const [recipient, setRecipient] = useState(null);
   const [users, setUsers] = useState([]);
@@ -9,6 +11,10 @@ function Dashboard({ user, onLogout }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const onLogout = () => {
+    navigate("/logout");
+  };
 
   // Fetch all registered users
   useEffect(() => {
@@ -37,17 +43,17 @@ function Dashboard({ user, onLogout }) {
     }
 
     fetchUsers();
-  }, []);
+  }, [setLoading, setError]);
 
   // Assign a unique recipient
   const assignRecipient = (usersList) => {
     if (usersList.length > 0) {
       const availableRecipients = usersList.filter(
-        (u) => u.name !== user.name && !u.assignedTo
+        (u) => u.name !== user.name && !u.assignedTo,
       );
       if (availableRecipients.length > 0) {
         const randomIndex = Math.floor(
-          Math.random() * availableRecipients.length
+          Math.random() * availableRecipients.length,
         );
         setRecipient(availableRecipients[randomIndex].name);
       } else {
@@ -97,7 +103,9 @@ function Dashboard({ user, onLogout }) {
     const today = new Date();
     const restrictionDate = new Date("2024-12-12");
     if (today < restrictionDate) {
-      setResponseMessage("You cannot view received greetings until December 12, 2024.");
+      setResponseMessage(
+        "You cannot view received greetings until December 12, 2024.",
+      );
     } else {
       navigate("/received-greetings");
     }
@@ -120,7 +128,9 @@ function Dashboard({ user, onLogout }) {
             onChange={(e) => setGreeting(e.target.value)}
           />
           <button onClick={handleSendGreeting}>Send Greeting</button>
-          <button onClick={handleViewReceivedGreetings}>Received Greetings</button>
+          <button onClick={handleViewReceivedGreetings}>
+            Received Greetings
+          </button>
         </>
       )}
       {responseMessage && <p>{responseMessage}</p>}
