@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Login({onLoginSuccess}) {
+function Login({ onLoginSuccess }) {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -9,7 +9,7 @@ function Login({onLoginSuccess}) {
 
   const onSwitchToRegister = () => {
     navigate('/register');
-  }
+  };
 
   const handleLogin = async () => {
     if (!name || !password) {
@@ -32,10 +32,13 @@ function Login({onLoginSuccess}) {
         throw new Error(data.message || "Failed to log in.");
       }
 
+      // Сохранение токена в localStorage
+      localStorage.setItem("token", data.token);
+
       setResponseMessage("Login successful!");
       setName("");
       setPassword("");
-      onLoginSuccess(data.user);
+      onLoginSuccess(data.user); // Передача информации о пользователе
       navigate('/dashboard');
     } catch (error) {
       setResponseMessage(error.message);

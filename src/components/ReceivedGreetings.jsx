@@ -8,8 +8,16 @@ function ReceivedGreetings({ user }) {
   useEffect(() => {
     async function fetchGreetings() {
       try {
+        const token = localStorage.getItem("token");
+
         const response = await fetch(
-          `/.netlify/functions/getMessages?recipient=${user.name}`
+          `/.netlify/functions/getMessages?recipient=${user.name}`,
+          {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
         );
         const data = await response.json();
 

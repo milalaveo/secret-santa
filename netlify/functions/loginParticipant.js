@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 exports.handler = async (event) => {
   try {
@@ -35,9 +36,16 @@ exports.handler = async (event) => {
       };
     }
 
+    // Создаём JWT токен
+    const token = jwt.sign({ id: user._id, name }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: "Login successful", user }),
+      body: JSON.stringify({
+        message: "Login successful",
+        token,
+        user: { name },
+      }),
     };
   } catch (error) {
     console.error("Error in loginParticipant:", error);

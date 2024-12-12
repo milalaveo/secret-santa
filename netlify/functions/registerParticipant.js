@@ -1,6 +1,7 @@
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 exports.handler = async (event) => {
   try {
@@ -31,17 +32,24 @@ exports.handler = async (event) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const participant = { 
-      name, 
+    const participant = {
+      name,
       password: hashedPassword,
-      createdAt: new Date() 
+      createdAt: new Date(),
     };
 
-    await participants.insertOne(participant);
+    const result = await participants.insertOne(participant);
+
+    // Создаём JWT токен
+    const token = jwt.sign({ id: result.insertedId, name }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     return {
       statusCode: 201,
-      body: JSON.stringify({ message: "Participant registered successfully!" }),
+      body: JSON.stringify({
+        message: "Participant registered successfully!",
+        token,
+        user: { name },
+      }),
     };
   } catch (error) {
     console.error("Error registering participant:", error);

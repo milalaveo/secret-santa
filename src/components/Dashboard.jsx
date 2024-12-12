@@ -15,7 +15,12 @@ function Dashboard({ user, onLogout }) {
     async function fetchUsers() {
       try {
         setLoading(true);
-        const response = await fetch("/.netlify/functions/getUsers");
+        const token = localStorage.getItem("token");
+        const response = await fetch("/.netlify/functions/getUsers", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
 
         if (!response.ok) {
@@ -59,10 +64,12 @@ function Dashboard({ user, onLogout }) {
     }
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch("/.netlify/functions/sendGreeting", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           sender: user.name,
